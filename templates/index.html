@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UVA SDS GPT</title>
+    <link rel="stylesheet" href="../static/styles.css">
+  </head>
+  <body>
+    <header>
+      <h1>UVA SDS GPT</h1>
+      <p class="subtitle">Warm-up: echo • Case study: TinyLlama via Ollama • Optional: Agent Tools</p>
+    </header>
+
+    <main id="chat">
+      <div id="messages" aria-live="polite"></div>
+
+      <form id="composer">
+        <input id="prompt" type="text" placeholder="Type your question..." autocomplete="off" required />
+        <button type="submit">Send</button>
+      </form>
+
+      <div class="mode">
+        <label><input type="radio" name="mode" value="echo" checked> Echo</label>
+        <label><input type="radio" name="mode" value="chat"> TinyLlama</label>
+        <label><input type="radio" name="mode" value="agent"> Agent (Tools)</label>
+      </div>
+
+      <div class="hint">
+        Try in Agent mode: <code>pwd</code>, <code>ls</code>, <code>cat README.txt</code>, <code>head -n 1 README.txt</code>.
+      </div>
+    </main>
+
+    <script>
+      const form = document.getElementById("composer");
+      const input = document.getElementById("prompt");
+      const messages = document.getElementById("messages");
+      let mode = "echo";
+
+      document.querySelectorAll('input[name="mode"]').forEach(r => {
+        r.addEventListener('change', (e) => {
+          mode = e.target.value;
+          addBubble(`Switched mode to ${mode}`, "system");
+        });
+      });
+
+      function addBubble(text, who) {
+        const b = document.createElement("div");
+        b.className = `bubble ${who}`;
+        b.textContent = text;
+        messages.appendChild(b);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        addBubble(text, "user");
+        input.value = "";
+        try {
+          const endpoint = mode === "chat" ? "/api/chat" : (mode === "agent" ? "/api/agent" : "/api/echo");
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ text })
+          });
+          const data = await res.json();
+          addBubble(data.reply || data.error || "(no reply)", "bot");
+        } catch (err) {
+          addBubble("Error contacting server.", "bot");
+        }
+      });
+    </script>
+  </body>
+</html>
