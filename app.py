@@ -86,7 +86,7 @@ def _secure_parse(cmd: str):
             mapped.append(tok); continue
         if tok.startswith("-"):
             mapped.append(tok); continue
-        if any(ch in tok for ch in ("/","\")):
+        if any(ch in tok for ch in ("/","\\")):
             mapped.append(str(_in_sandbox(tok)))
         else:
             mapped.append(tok)
