@@ -8,6 +8,10 @@ app = Flask(__name__)
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "tinyllama")
 
+@app.route("/api/health")
+def health():
+    return jsonify(status="ok"), 200
+    
 @app.get("/")
 def home():
     return render_template("index.html")
